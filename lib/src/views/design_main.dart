@@ -18,7 +18,7 @@ class _MainInitScreen extends State<MainInitScreen>
   // Lista de widgets para mostrar según el índice
   final List<Widget> _screens = [
     const HomeScreen(), // Pantalla principal
-    DetalleScreen(), // Puedes agregar aquí una pantalla de perfil más adelante
+    DetalleScreen(), // Detalle de usuario
   ];
 
   void _onItemTapped(int index) {
