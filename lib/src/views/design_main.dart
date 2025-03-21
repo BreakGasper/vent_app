@@ -10,10 +10,10 @@ class MainInitScreen extends StatefulWidget {
   State<MainInitScreen> createState() => _MainInitScreen();
 }
 
-class _MainInitScreen extends State<MainInitScreen>
-    with SingleTickerProviderStateMixin {
+class _MainInitScreen extends State<MainInitScreen> {
   int _selectedIndex = 0;
   bool _isMenuOpen = false;
+  int _counter = 0; // Contador para mostrar en el círculo rojo
 
   // Lista de widgets para mostrar según el índice
   final List<Widget> _screens = [
@@ -43,62 +43,19 @@ class _MainInitScreen extends State<MainInitScreen>
         ),
         backgroundColor: AppColors.darkBlue,
       ),
-      body: Stack(
-        children: [
-          // Mostrar la pantalla correspondiente al índice seleccionado
-          _screens[_selectedIndex],
-          // Menú radial
-          if (_isMenuOpen) ...[
-            Align(
-              alignment: Alignment.bottomLeft,
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  bottom: 150,
-                  left: 60,
-                ), // Ajustado
-                child: _buildMenuItem(Icons.search, 60, 150),
-              ),
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 150), // Ajustado
-                child: _buildMenuItem(Icons.add, 0, 110),
-              ),
-            ),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  bottom: 150,
-                  right: 60,
-                ), // Ajustado
-                child: _buildMenuItem(Icons.settings, -60, 150),
-              ),
-            ),
-          ],
-        ],
-      ),
+      body: _screens[_selectedIndex],
       bottomNavigationBar: Stack(
         alignment: Alignment.bottomCenter,
         children: [
           BottomNavigationBar(
             items: <BottomNavigationBarItem>[
-              // Home
               BottomNavigationBarItem(
                 icon: Icon(Icons.home),
-                label:
-                    _selectedIndex == 0
-                        ? 'VentApps'
-                        : '', // Texto solo cuando está seleccionado
+                label: _selectedIndex == 0 ? 'VentApps' : '',
               ),
-              // Profile
               BottomNavigationBarItem(
                 icon: Icon(Icons.account_circle),
-                label:
-                    _selectedIndex == 1
-                        ? 'Yo'
-                        : '', // Texto solo cuando está seleccionado
+                label: _selectedIndex == 1 ? 'Yo' : '',
               ),
             ],
             currentIndex: _selectedIndex,
@@ -106,18 +63,44 @@ class _MainInitScreen extends State<MainInitScreen>
             selectedItemColor: AppColors.lightGray,
             unselectedItemColor: Colors.grey,
             onTap: _onItemTapped,
-            // No es necesario el selectedLabelStyle aquí
           ),
           Positioned(
             bottom: 22,
-            child: FloatingActionButton(
-              onPressed: _toggleMenu,
-              backgroundColor: AppColors.lightGray,
-              shape: CircleBorder(),
-              child: Icon(
-                _isMenuOpen ? Icons.close : Icons.catching_pokemon_rounded,
-                color: AppColors.brightBlue,
-              ),
+            child: Stack(
+              clipBehavior: Clip.none, // Permite que el contador sobresalga
+              children: [
+                FloatingActionButton(
+                  onPressed: _toggleMenu,
+                  backgroundColor: AppColors.lightGray,
+                  shape: CircleBorder(),
+                  child: Icon(
+                    _isMenuOpen ? Icons.close : Icons.shopping_cart,
+                    color: AppColors.brightBlue,
+                  ),
+                ),
+                // El círculo pequeño rojo con el contador
+                Positioned(
+                  top: -5, // Ajusta la posición del contador encima del FAB
+                  right: -5, // Ajusta la posición horizontal del contador
+                  child: Container(
+                    width: 20, // Tamaño del círculo
+                    height: 20, // Tamaño del círculo
+                    decoration: BoxDecoration(
+                      color: Colors.red, // Color rojo para el contador
+                      shape: BoxShape.circle, // Forma circular
+                    ),
+                    child: Center(
+                      child: Text(
+                        '$_counter', // Muestra el contador
+                        style: const TextStyle(
+                          color: Colors.white, // Texto blanco
+                          fontSize: 12, // Tamaño de la fuente
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -125,18 +108,20 @@ class _MainInitScreen extends State<MainInitScreen>
     );
   }
 
+  // Método que genera un FloatingActionButton con animación
   Widget _buildMenuItem(IconData icon, double x, double y) {
-    return AnimatedOpacity(
-      duration: const Duration(milliseconds: 300),
-      opacity: _isMenuOpen ? 1.0 : 0.0,
-      child: Transform.translate(
-        offset: Offset(x, y),
-        child: FloatingActionButton(
-          mini: true,
-          onPressed: () => print('Clicked $icon'),
-          backgroundColor: AppColors.brightBlue,
-          child: Icon(icon, color: AppColors.lightGray),
-        ),
+    return GestureDetector(
+      onTap: () {
+        debugPrint('Clicked $icon');
+        // Puedes añadir la lógica aquí cuando se haga clic en un ícono del menú
+      },
+      child: FloatingActionButton(
+        mini: true,
+        onPressed: () {
+          debugPrint('Clicked $icon');
+        },
+        backgroundColor: AppColors.brightBlue,
+        child: Icon(icon, color: AppColors.lightGray),
       ),
     );
   }
