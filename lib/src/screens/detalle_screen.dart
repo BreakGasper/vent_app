@@ -22,11 +22,13 @@ class _DetalleScreen extends State<DetalleScreen> {
   Future<void> _loadArticlesFromDatabase() async {
     try {
       List<Map<String, dynamic>> articlesFromDb =
-          await DatabaseHelper.instance.getArticles();
+          await DatabaseHelper.instance.getAllArticles();
       setState(() {
         savedArticles =
             articlesFromDb
-                .map((e) => {'title': e['title'], 'image': e['image']})
+                .map(
+                  (e) => {'sku_code': e['sku_code'], 'estatus': e['estatus']},
+                )
                 .toList();
       });
     } catch (e) {
@@ -47,13 +49,7 @@ class _DetalleScreen extends State<DetalleScreen> {
                 itemCount: savedArticles.length,
                 itemBuilder: (context, index) {
                   return ListTile(
-                    leading: Image.network(
-                      savedArticles[index]['image']!,
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover,
-                    ),
-                    title: Text(savedArticles[index]['title']!),
+                    title: Text(savedArticles[index]['sku_code']!),
                   );
                 },
               ),

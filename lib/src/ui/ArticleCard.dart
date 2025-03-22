@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:vent_app/src/models/Article.dart';
 import 'package:vent_app/src/resources/colors.dart';
 
 class ArticleCard extends StatelessWidget {
-  final Map<String, String> article;
+  final Article article;
   final int index;
-  final VoidCallback onFabPressed; // Callback para el FAB
+  final VoidCallback onFabPressed;
 
   const ArticleCard({
     Key? key,
@@ -17,45 +18,70 @@ class ArticleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.all(10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      margin: const EdgeInsets.all(10),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       elevation: 5,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: CachedNetworkImage(
-              imageUrl: article['image']!,
-              width: 150,
-              height: 150,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => CircularProgressIndicator(),
-              errorWidget: (context, url, error) => Icon(Icons.error),
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: CachedNetworkImage(
+                    imageUrl: article.image,
+                    width: double.infinity,
+                    height: 180,
+                    fit: BoxFit.cover,
+                    placeholder:
+                        (context, url) => const CircularProgressIndicator(),
+                    errorWidget:
+                        (context, url, error) => const Icon(Icons.error),
+                  ),
+                ),
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: CircleAvatar(
+                    backgroundColor: Colors.white,
+                    child: Icon(Icons.favorite, color: Colors.red),
+                  ),
+                ),
+              ],
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              article['title']!,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
+            const SizedBox(height: 10),
+            Text(
+              article.title,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-          ),
-          // Agregar el FAB dentro de cada tarjeta de artículo
-          Padding(
-            padding: const EdgeInsets.only(bottom: 10.0),
-            child: FloatingActionButton(
-              onPressed:
-                  onFabPressed, // Llamamos al callback para actualizar los artículos
-              backgroundColor: AppColors.brightBlue,
-              child: Icon(Icons.add, color: AppColors.lightGray),
+            const SizedBox(height: 5),
+            Text(
+              article.descripcion,
+              style: const TextStyle(fontSize: 14, color: Colors.grey),
             ),
-          ),
-        ],
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "\$${article.precio}",
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                FloatingActionButton(
+                  onPressed: onFabPressed,
+                  backgroundColor: AppColors.brightBlue,
+                  mini: true,
+                  child: const Icon(Icons.add, color: Colors.white),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

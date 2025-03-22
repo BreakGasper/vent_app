@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:vent_app/services/FirebaseHelper.dart';
+import 'package:vent_app/services/database_helper.dart';
+import 'package:vent_app/src/models/Article.dart';
 import 'package:vent_app/src/resources/colors.dart';
 import 'package:vent_app/src/ui/ArticleCard.dart';
+import 'package:vent_app/src/ui/ArticleItems.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,7 +14,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreen extends State<HomeScreen> {
-  List<Map<String, String>> articles = [];
+  List<Article> articles = [];
   bool isFirebaseInitialized = false;
 
   @override
@@ -28,19 +31,18 @@ class _HomeScreen extends State<HomeScreen> {
       });
       _fetchArticles();
     } catch (e) {
-      debugPrint("Error al inicializar Firebase: $e");
+      debugPrint("Error al inicializar Firebase: \$e");
     }
   }
 
   void _fetchArticles() async {
     try {
-      List<Map<String, String>> loadedArticles =
-          await FirebaseHelper.fetchArticles();
+      List<Article> loadedArticles = await FirebaseHelper.fetchArticles();
       setState(() {
         articles = loadedArticles;
       });
     } catch (e) {
-      debugPrint("Error fetching articles: $e");
+      debugPrint("Error fetching articles: \$e");
     }
   }
 
@@ -54,33 +56,91 @@ class _HomeScreen extends State<HomeScreen> {
         color: AppColors.lightGray,
         child:
             isFirebaseInitialized
-                ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: GridView.builder(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 10.0,
-                          mainAxisSpacing: 10.0,
-                          childAspectRatio: 0.7,
+                ? SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.all(10.0),
+                          child: Text(
+                            "Artículos",
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
-                        itemCount: articles.length,
-                        itemBuilder: (context, index) {
-                          return ArticleCard(
-                            article: articles[index],
-                            index: index,
-                            onFabPressed: () {
-                              debugPrint('FAB pressed');
+                        SizedBox(
+                          height: 400,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: articles.length,
+                            itemBuilder: (context, index) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8.0,
+                                ),
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(maxWidth: 200),
+                                  child: ArticleCard(
+                                    article: articles[index],
+                                    index: index,
+                                    onFabPressed: () {
+                                      onFabPressed(articles[index]);
+                                    },
+                                  ),
+                                ),
+                              );
                             },
-                          );
-                        },
-                      ),
+                          ),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.all(10.0),
+                          child: Text(
+                            "Más Artículos",
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: articles.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 8.0,
+                                horizontal: 10.0,
+                              ),
+                              child: ArticleItems(
+                                article: articles[index],
+                                index: index,
+                                onPressed: () {
+                                  onFabPressed(articles[index]);
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 )
-                : Center(child: CircularProgressIndicator()),
+                : const Center(child: CircularProgressIndicator()),
       ),
     );
+  }
+
+  void onFabPressed(Article article) async {
+    try {
+      int id = await DatabaseHelper.instance.insertArticleFromArticle(article);
+      debugPrint("Artículo insertado con ID: \$id");
+    } catch (e) {
+      debugPrint("Error al insertar el artículo: \$e");
+    }
   }
 }
