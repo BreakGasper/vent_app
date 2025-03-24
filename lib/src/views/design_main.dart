@@ -13,7 +13,7 @@ class MainInitScreen extends StatefulWidget {
 class _MainInitScreen extends State<MainInitScreen> {
   int _selectedIndex = 0;
   bool _isMenuOpen = false;
-  int _counter = 0; // Contador para mostrar en el círculo rojo
+  final int _counter = 0; // Contador para mostrar en el círculo rojo
 
   // Lista de widgets para mostrar según el índice
   final List<Widget> _screens = [

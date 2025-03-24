@@ -8,11 +8,11 @@ class ArticleItems extends StatelessWidget {
   final VoidCallback onPressed;
 
   const ArticleItems({
-    Key? key,
+    super.key,
     required this.article,
     required this.index,
     required this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

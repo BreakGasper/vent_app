@@ -9,11 +9,11 @@ class ArticleCard extends StatelessWidget {
   final VoidCallback onFabPressed;
 
   const ArticleCard({
-    Key? key,
+    super.key,
     required this.article,
     required this.index,
     required this.onFabPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
