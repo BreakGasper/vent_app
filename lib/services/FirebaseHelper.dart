@@ -8,6 +8,52 @@ class FirebaseHelper {
     await Firebase.initializeApp();
   }
 
+  static Stream<List<Article>> fetchArticles() {
+    final DatabaseReference ref = FirebaseDatabase.instance.ref().child(
+      'Categoria',
+    );
+
+    return ref.onValue.map((event) {
+      final List<Article> loadedArticles = [];
+
+      if (event.snapshot.value != null) {
+        final categoriesData = event.snapshot.value as Map<dynamic, dynamic>;
+
+        categoriesData.forEach((categoryKey, categoryValue) {
+          final articlesData = categoryValue['articulos'];
+
+          if (articlesData is List) {
+            for (var articleMap in articlesData) {
+              if (articleMap is Map) {
+                Article article = Article.fromMap({
+                  'id': articleMap['id'].toString(),
+                  'sku_code': articleMap['sku_code'],
+                  'status': articleMap['status'],
+                  'id_usuario': articleMap['id_usuario'] ?? '',
+                  'precio': articleMap['precio'],
+                  'cantidad': articleMap['stock'],
+                  'disponible':
+                      articleMap['stock'] != null && articleMap['stock'] > 0,
+                  'nombre': articleMap['nombre'],
+                  'url': articleMap['url'],
+                  'descripcion': articleMap['descripcion'] ?? '',
+                  'proveedor': articleMap['proveedor'] ?? '',
+                  'categoria': articleMap['categoria'] ?? '',
+                  'unidadMedida': articleMap['unidadMedida'] ?? '',
+                  'fechaRegistro': articleMap['fechaRegistro'] ?? '',
+                });
+
+                loadedArticles.add(article);
+              }
+            }
+          }
+        });
+      }
+      return loadedArticles;
+    });
+  }
+
+  /*
   static Future<List<Article>> fetchArticles() async {
     try {
       DatabaseReference ref = FirebaseDatabase.instance.ref().child(
@@ -58,15 +104,14 @@ class FirebaseHelper {
       throw Exception("Error fetching articles: $e");
     }
   }
+*/
+  static Stream<List<Article>> fetchArticlesByCategoria({
+    String? categoryFilter,
+  }) {
+    DatabaseReference ref = FirebaseDatabase.instance.ref().child('Categoria');
 
-  // Método para obtener los artículos de Firebase
-  static Future<List<Map<String, String>>> fetchArticle2() async {
-    try {
-      DatabaseReference ref = FirebaseDatabase.instance.ref().child(
-        'Categoria',
-      );
-      DatabaseEvent event = await ref.once();
-      List<Map<String, String>> loadedArticles = [];
+    return ref.onValue.map((event) {
+      List<Article> loadedArticles = [];
 
       if (event.snapshot.value != null) {
         Map<dynamic, dynamic> categoriesData =
@@ -76,17 +121,37 @@ class FirebaseHelper {
           var articlesData = categoryValue['articulos'];
 
           if (articlesData is List) {
-            for (var value in articlesData) {
-              String imageUrl =
-                  'https://firebasestorage.googleapis.com/v0/b/mrapp-b8d1e.appspot.com/o/${value['url']}';
-              loadedArticles.add({'title': value['nombre'], 'image': imageUrl});
+            for (var articleMap in articlesData) {
+              if (articleMap is Map) {
+                if (categoryFilter == null ||
+                    articleMap['categoria'] == categoryFilter) {
+                  Article article = Article.fromMap({
+                    'id': articleMap['id'].toString(),
+                    'sku_code': articleMap['sku_code'],
+                    'status': articleMap['status'],
+                    'id_usuario': articleMap['id_usuario'] ?? '',
+                    'precio': articleMap['precio'],
+                    'cantidad': articleMap['stock'],
+                    'disponible':
+                        articleMap['stock'] != null && articleMap['stock'] > 0,
+                    'nombre': articleMap['nombre'],
+                    'url': articleMap['url'],
+                    'descripcion': articleMap['descripcion'] ?? '',
+                    'proveedor': articleMap['proveedor'] ?? '',
+                    'categoria': articleMap['categoria'] ?? '',
+                    'unidadMedida': articleMap['unidadMedida'] ?? '',
+                    'fechaRegistro': articleMap['fechaRegistro'] ?? '',
+                  });
+
+                  loadedArticles.add(article);
+                }
+              }
             }
           }
         });
       }
+
       return loadedArticles;
-    } catch (e) {
-      throw Exception("Error fetching articles: $e");
-    }
+    });
   }
 }

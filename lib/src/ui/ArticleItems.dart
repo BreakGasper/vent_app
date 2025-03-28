@@ -48,6 +48,7 @@ class ArticleItems extends StatelessWidget {
               children: [
                 Text(
                   article.title,
+                  maxLines: 1,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -55,11 +56,13 @@ class ArticleItems extends StatelessWidget {
                 ),
                 Text(
                   article.descripcion,
+                  maxLines: 1,
                   style: const TextStyle(color: Colors.grey, fontSize: 12),
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   '\$${article.precio.toStringAsFixed(2)}',
+                  maxLines: 1,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
@@ -68,6 +71,7 @@ class ArticleItems extends StatelessWidget {
               ],
             ),
           ),
+
           IconButton(
             icon: const Icon(Icons.arrow_forward, color: Colors.black),
             onPressed: onPressed,

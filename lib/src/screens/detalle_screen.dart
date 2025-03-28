@@ -1,58 +1,102 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:vent_app/services/database_helper.dart'; // Asegúrate de tener esta importación
+import 'package:vent_app/data/db/database_helper.dart';
+import 'package:vent_app/data/db/pedidos_dao.dart';
+
+import 'package:vent_app/src/models/Article.dart'; // Asegúrate de tener esta importación
 
 class DetalleScreen extends StatefulWidget {
-  const DetalleScreen({super.key});
+  final Article articulo; // Recibe un objeto Article en lugar de Pedido
+
+  const DetalleScreen({super.key, required this.articulo});
 
   @override
   State<DetalleScreen> createState() => _DetalleScreen();
 }
 
 class _DetalleScreen extends State<DetalleScreen> {
-  List<Map<String, dynamic>> savedArticles =
-      []; // Lista para almacenar los artículos de SQLite
+  late Article articulo; // Aquí se guarda el artículo recibido
 
   @override
   void initState() {
     super.initState();
-    _loadArticlesFromDatabase();
+    articulo =
+        widget
+            .articulo; // Inicializamos el artículo con el que se pasa desde el constructor
   }
 
-  // Método para cargar los artículos desde la base de datos
-  Future<void> _loadArticlesFromDatabase() async {
+  // Método para agregar el artículo a los pedidos
+  void onFabPressed(Article article) async {
     try {
-      List<Map<String, dynamic>> articlesFromDb =
-          await DatabaseHelper.instance.getAllArticles();
-      setState(() {
-        savedArticles =
-            articlesFromDb
-                .map(
-                  (e) => {'sku_code': e['sku_code'], 'estatus': e['estatus']},
-                )
-                .toList();
-      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Artículo agregado al pedido')));
     } catch (e) {
-      debugPrint("Error al cargar artículos de la base de datos: $e");
+      debugPrint("Error al agregar artículo: $e");
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Mis Artículos Guardados')),
-      body:
-          savedArticles.isEmpty
-              ? const Center(
-                child: CircularProgressIndicator(),
-              ) // Muestra un indicador de carga mientras obtienes los artículos
-              : ListView.builder(
-                itemCount: savedArticles.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(savedArticles[index]['sku_code']!),
-                  );
-                },
-              ),
+      appBar: AppBar(title: const Text('Detalle del Artículo')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CachedNetworkImage(
+              imageUrl: articulo.image,
+              width: 60,
+              height: 60,
+              fit: BoxFit.cover,
+            ),
+
+            const SizedBox(height: 16),
+
+            // Título del artículo
+            Text(
+              articulo.title, // Usamos la propiedad `title` de Article
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 8),
+
+            // Descripción del artículo
+            Text(
+              articulo
+                  .descripcion, // Usamos la propiedad `descripcion` de Article
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 8),
+
+            // Precio del artículo
+            Text(
+              'Precio: \$${articulo.precio}',
+              style: const TextStyle(fontSize: 16, color: Colors.green),
+            ),
+
+            const SizedBox(height: 8),
+
+            // Mostrar la cantidad disponible
+            Text(
+              'Cantidad disponible: ${articulo.cantidad}',
+              style: const TextStyle(fontSize: 16),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Botón para agregar al pedido
+            ElevatedButton(
+              onPressed: () {
+                onFabPressed(articulo); // Agregar artículo al pedido
+              },
+              child: const Text('Agregar al Pedido'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

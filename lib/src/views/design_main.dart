@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:vent_app/data/db/pedidos_dao.dart';
 import 'package:vent_app/src/resources/colors.dart';
 import 'package:vent_app/src/screens/detalle_screen.dart';
 import 'package:vent_app/src/screens/home_screen.dart';
+import 'package:vent_app/data/db/database_helper.dart';
+import 'package:vent_app/src/screens/profile_screen.dart';
 
 class MainInitScreen extends StatefulWidget {
   const MainInitScreen({super.key});
@@ -18,7 +21,7 @@ class _MainInitScreen extends State<MainInitScreen> {
   // Lista de widgets para mostrar según el índice
   final List<Widget> _screens = [
     const HomeScreen(), // Pantalla principal
-    DetalleScreen(), // Detalle de usuario
+    ProfileScreen(), // Detalle de usuario
   ];
 
   void _onItemTapped(int index) {
@@ -70,6 +73,7 @@ class _MainInitScreen extends State<MainInitScreen> {
               clipBehavior: Clip.none, // Permite que el contador sobresalga
               children: [
                 FloatingActionButton(
+                  heroTag: 'design_main_fab_${UniqueKey()}',
                   onPressed: _toggleMenu,
                   backgroundColor: AppColors.lightGray,
                   shape: CircleBorder(),
@@ -82,22 +86,37 @@ class _MainInitScreen extends State<MainInitScreen> {
                 Positioned(
                   top: -5, // Ajusta la posición del contador encima del FAB
                   right: -5, // Ajusta la posición horizontal del contador
-                  child: Container(
-                    width: 20, // Tamaño del círculo
-                    height: 20, // Tamaño del círculo
-                    decoration: BoxDecoration(
-                      color: Colors.red, // Color rojo para el contador
-                      shape: BoxShape.circle, // Forma circular
-                    ),
-                    child: Center(
-                      child: Text(
-                        '$_counter', // Muestra el contador
-                        style: const TextStyle(
-                          color: Colors.white, // Texto blanco
-                          fontSize: 12, // Tamaño de la fuente
+                  child: StreamBuilder<int>(
+                    stream:
+                        PedidosDAO
+                            .instance
+                            .counterStream, // Usa la instancia estática de PedidosDAO
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator(); // Muestra un indicador de carga mientras no haya datos
+                      }
+
+                      // Si no hay datos, asignamos el valor predeterminado (0)
+                      int counter = snapshot.data ?? 0;
+
+                      return Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: Colors.red, // Color rojo para el contador
+                          shape: BoxShape.circle,
                         ),
-                      ),
-                    ),
+                        child: Center(
+                          child: Text(
+                            '$counter',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
@@ -116,6 +135,7 @@ class _MainInitScreen extends State<MainInitScreen> {
         // Puedes añadir la lógica aquí cuando se haga clic en un ícono del menú
       },
       child: FloatingActionButton(
+        heroTag: 'article_card_fab_${UniqueKey()}',
         mini: true,
         onPressed: () {
           debugPrint('Clicked $icon');
