@@ -3,6 +3,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/services.dart';
 import 'package:vent_app/src/models/Article.dart';
 import 'package:vent_app/src/resources/colors.dart';
+import 'package:vent_app/data/db/favoritos_dao.dart';
+import 'package:vent_app/data/models/favorito.dart';
 
 class ArticleCard extends StatefulWidget {
   final Article article;
@@ -34,6 +36,9 @@ class _ArticleCardState extends State<ArticleCard> {
   // Controlador para el TextField
   final TextEditingController _quantityController = TextEditingController();
 
+  // Controlador de Favoritos
+  final FavoritosDAO favoritosDAO = FavoritosDAO();
+
   // Función para actualizar la cantidad
   void _updateQuantity(int newQuantity) {
     setState(() {
@@ -54,7 +59,6 @@ class _ArticleCardState extends State<ArticleCard> {
   // Función para incrementar la cantidad
   void _incrementQuantity() {
     _updateQuantity(_quantity + 1);
-
     widget.onFabPlusClick();
   }
 
@@ -63,8 +67,60 @@ class _ArticleCardState extends State<ArticleCard> {
     if (_quantity > 1) {
       _updateQuantity(_quantity - 1);
     }
-
     widget.onFabMinusClick();
+  }
+
+  // Función para manejar el estado del favorito (marcar o desmarcar)
+  Future<void> _toggleFavorite() async {
+    final favorito = await favoritosDAO.getFavoritoBySku(
+      widget.article.skuCode,
+    );
+
+    if (favorito != null) {
+      // Si ya está en favoritos, eliminarlo
+      await favoritosDAO.deleteFavorito(widget.article.skuCode);
+      setState(() {
+        _isFavorite = false;
+      });
+    } else {
+      // Si no está en favoritos, agregarlo
+      final nuevoFavorito = Favorito(
+        skuCode: widget.article.skuCode,
+        nombre: widget.article.title,
+        descripcion: widget.article.descripcion,
+        precio: widget.article.precio,
+        stock: widget.article.cantidad,
+        url: widget.article.image,
+        unidadMedida: widget.article.unidadMedida,
+        proveedor: widget.article.proveedor,
+        fechaRegistro: DateTime.now().toString(),
+        status: widget.article.estatus,
+        promocion: 0,
+        almacen: widget.article.almacen,
+        categoria: widget.article.categoria,
+        favorito: true,
+      );
+      await favoritosDAO.insertFavorito(nuevoFavorito);
+      setState(() {
+        _isFavorite = true;
+      });
+    }
+  }
+
+  // Función para verificar si el artículo ya es favorito al iniciar
+  Future<void> _checkFavoriteStatus() async {
+    final favorito = await favoritosDAO.getFavoritoBySku(
+      widget.article.skuCode,
+    );
+    setState(() {
+      _isFavorite = favorito != null;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _checkFavoriteStatus(); // Verifica el estado de favorito cuando se inicializa
   }
 
   @override
@@ -97,15 +153,7 @@ class _ArticleCardState extends State<ArticleCard> {
                   top: 10,
                   right: 10,
                   child: GestureDetector(
-                    onTap: () {
-                      // Aquí colocas el evento que quieres ejecutar al hacer clic
-                      debugPrint("¡Icono de favorito presionado!");
-                      // Por ejemplo, puedes cambiar el estado del ícono, como un favorito
-                      setState(() {
-                        _isFavorite =
-                            !_isFavorite; // Cambia el estado de favorito
-                      });
-                    },
+                    onTap: _toggleFavorite, // Llama a la función de favoritos
                     child: CircleAvatar(
                       backgroundColor: Colors.white,
                       child: Icon(

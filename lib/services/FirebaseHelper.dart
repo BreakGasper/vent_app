@@ -41,6 +41,8 @@ class FirebaseHelper {
                   'categoria': articleMap['categoria'] ?? '',
                   'unidadMedida': articleMap['unidadMedida'] ?? '',
                   'fechaRegistro': articleMap['fechaRegistro'] ?? '',
+                  'caracteristicas': articleMap['caracteristicas'] ?? [],
+                  'puntuacion': articleMap['puntuacion'] ?? 0.0,
                 });
 
                 loadedArticles.add(article);
@@ -53,58 +55,73 @@ class FirebaseHelper {
     });
   }
 
-  /*
-  static Future<List<Article>> fetchArticles() async {
+  Future<void> updateArticlesInFirebase() async {
+    final DatabaseReference ref = FirebaseDatabase.instance.ref().child(
+      'Categoria',
+    );
+
     try {
-      DatabaseReference ref = FirebaseDatabase.instance.ref().child(
-        'Categoria',
-      );
-      DatabaseEvent event = await ref.once();
-      List<Article> loadedArticles = [];
+      // Obtén todos los datos de las categorías
+      DataSnapshot snapshot = await ref.get();
 
-      if (event.snapshot.value != null) {
-        Map<dynamic, dynamic> categoriesData =
-            event.snapshot.value as Map<dynamic, dynamic>;
+      if (snapshot.exists) {
+        final categoriesData = snapshot.value as Map<dynamic, dynamic>;
 
-        categoriesData.forEach((categoryKey, categoryValue) {
-          var articlesData = categoryValue['articulos'];
+        print('Datos de categorías obtenidos: $categoriesData');
 
-          // Verifica si articlesData es una lista
+        for (var categoryKey in categoriesData.keys) {
+          final categoryValue = categoriesData[categoryKey];
+          final articlesData = categoryValue['articulos'];
+
           if (articlesData is List) {
+            print(
+              'Artículos encontrados en la categoría $categoryKey: $articlesData',
+            );
+
             for (var articleMap in articlesData) {
-              // Verifica si el artículo es un Map válido
               if (articleMap is Map) {
-                // Crear una instancia de Article usando los datos del artículo
-                Article article = Article.fromMap({
-                  'id': articleMap['id'].toString(),
-                  'sku_code': articleMap['sku_code'],
-                  'status': articleMap['status'],
-                  'id_usuario': articleMap['id_usuario'] ?? '',
-                  'precio': articleMap['precio'],
-                  'cantidad': articleMap['stock'],
-                  'disponible':
-                      articleMap['stock'] != null && articleMap['stock'] > 0,
-                  'nombre': articleMap['nombre'],
-                  'url': articleMap['url'],
-                  'descripcion': articleMap['descripcion'] ?? '',
-                  'proveedor': articleMap['proveedor'] ?? '',
-                  'categoria': articleMap['categoria'] ?? '',
-                  'unidadMedida': articleMap['unidadMedida'] ?? '',
-                  'fechaRegistro': articleMap['fechaRegistro'] ?? '',
+                // Asegúrate de que el 'id' sea un String
+                String articleId =
+                    articleMap['id'].toString(); // Convertir a String
+
+                // Mostrar el artículo antes de actualizarlo
+                print('Actualizando artículo con ID: $articleId');
+
+                // Asignar puntuación por defecto (3.0) si no existe
+                double puntuacion = 3.2;
+
+                // Usar valor predeterminado para 'caracteristicas' si no está presente
+                List<dynamic> caracteristicas =
+                    articleMap['caracteristicas'] ??
+                    ["Característica genérica 1", "Característica genérica 2"];
+
+                print(
+                  'Artículo ID: $articleId, puntuación: $puntuacion, características: $caracteristicas',
+                );
+
+                // Actualizar artículo en la base de datos
+                DatabaseReference articleRef = ref
+                    .child(categoryKey)
+                    .child('articulos')
+                    .child(articleId); // Asegúrate de que el id sea un String
+                await articleRef.update({
+                  'puntuacion': puntuacion,
+                  'caracteristicas': caracteristicas,
                 });
 
-                loadedArticles.add(article); // Añadir el artículo a la lista
+                print("Artículo $articleId actualizado.");
               }
             }
           }
-        });
+        }
+      } else {
+        print("No se encontraron datos en la ruta Categoria.");
       }
-      return loadedArticles;
     } catch (e) {
-      throw Exception("Error fetching articles: $e");
+      print("Error al actualizar artículos: $e");
     }
   }
-*/
+
   static Stream<List<Article>> fetchArticlesByCategoria({
     String? categoryFilter,
   }) {

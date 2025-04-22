@@ -5,6 +5,7 @@ import 'package:vent_app/data/db/database_helper.dart';
 import 'package:vent_app/src/models/Article.dart';
 import 'package:vent_app/src/resources/colors.dart';
 import 'package:vent_app/src/screens/detalle_screen.dart';
+import 'package:vent_app/src/screens/dialog_detalle_screen.dart';
 import 'package:vent_app/src/ui/ArticleCard.dart';
 import 'package:vent_app/src/ui/ArticleItems.dart';
 
@@ -65,6 +66,7 @@ class _HomeScreen extends State<HomeScreen> {
                             ),
                           ),
                         ),
+
                         SizedBox(
                           height: 400,
                           child: _fetchArticlesByCategory(),
@@ -79,6 +81,7 @@ class _HomeScreen extends State<HomeScreen> {
                             ),
                           ),
                         ),
+
                         _fetchArticles(),
                         _buildTotalArticlesCount(), // Mostrar el total de artículos
                       ],
@@ -152,15 +155,16 @@ class _HomeScreen extends State<HomeScreen> {
                 article: articles[index],
                 index: index,
                 onPressed: () {
-                  _showDetalleDialog(context, articles[index]);
+                  // _showDetalleDialog(context, articles[index]);
+
                   // Navega a la pantalla de detalles
-                  /*Navigator.push(
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder:
                           (context) => DetalleScreen(articulo: articles[index]),
                     ),
-                  );*/
+                  );
                 },
               ),
             );
@@ -173,8 +177,10 @@ class _HomeScreen extends State<HomeScreen> {
   void _showDetalleDialog(BuildContext context, Article articulo) {
     showDialog(
       context: context,
+
       builder: (BuildContext context) {
         return Dialog(
+          backgroundColor: AppColors.lightGray,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
@@ -183,7 +189,7 @@ class _HomeScreen extends State<HomeScreen> {
             height: 500, // Ajusta la altura deseada
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: DetalleScreen(articulo: articulo),
+              child: DialogDetalleScreen(articulo: articulo),
             ),
           ),
         );
@@ -221,6 +227,8 @@ class _HomeScreen extends State<HomeScreen> {
                   article: articlesbyCategoria[index],
                   index: index,
                   onFabPressed: () {
+                    /*  var firebasae = FirebaseHelper();
+                    firebasae.updateArticlesInFirebase();*/
                     onFabPressed(articlesbyCategoria[index], 1);
                   },
                   onFabPlusClick: () {
@@ -242,9 +250,15 @@ class _HomeScreen extends State<HomeScreen> {
     try {
       PedidosDAO pedidosDAO = PedidosDAO.instance;
 
-      // Inserta el pedido en la base de datos utilizando la clase PedidosDAO
-      int id = await pedidosDAO.insertArticleFromArticle(article, cant);
-      debugPrint("Pedido insertado con ID: $id");
+      if (article.cantidad > 0 || article.cantidad == -1) {
+        // Inserta el pedido en la base de datos utilizando la clase PedidosDAO
+        int id = await pedidosDAO.insertArticleFromArticle(article, cant);
+        debugPrint("Pedido insertado con ID: $id");
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("No hay stock disponible")),
+        );
+      }
     } catch (e) {
       debugPrint("Error al insertar el pedido: $e");
     }

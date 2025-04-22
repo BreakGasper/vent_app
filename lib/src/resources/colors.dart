@@ -9,4 +9,7 @@ class AppColors {
 
   // Color 3: Azul brillante (#0049c8)
   static const Color brightBlue = Color(0xFF0049C8);
+
+  // Color 4: Verde
+  static const Color greenDark = Color.fromARGB(255, 17, 116, 8);
 }

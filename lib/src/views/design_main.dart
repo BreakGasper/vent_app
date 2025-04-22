@@ -5,6 +5,7 @@ import 'package:vent_app/src/screens/detalle_screen.dart';
 import 'package:vent_app/src/screens/home_screen.dart';
 import 'package:vent_app/data/db/database_helper.dart';
 import 'package:vent_app/src/screens/profile_screen.dart';
+import 'package:vent_app/src/views/setting_screen.dart';
 
 class MainInitScreen extends StatefulWidget {
   const MainInitScreen({super.key});
@@ -45,7 +46,19 @@ class _MainInitScreen extends State<MainInitScreen> {
           style: TextStyle(color: AppColors.lightGray),
         ),
         backgroundColor: AppColors.darkBlue,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.settings, color: AppColors.lightGray),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+            },
+          ),
+        ],
       ),
+
       body: _screens[_selectedIndex],
       bottomNavigationBar: Stack(
         alignment: Alignment.bottomCenter,

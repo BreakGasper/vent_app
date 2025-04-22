@@ -13,7 +13,11 @@ class Article {
   final String categoria;
   final String unidadMedida;
   final String fechaRegistro;
-
+  final List<String> caracteristicas; // Cambiado a List<String>
+  final String almacen; // Almacén del artículo
+  final double cuponDescuento; // Descuento
+  final bool inPromocion; // Si está en promoción
+  final double puntuacion; // Puntuación del artículo
   Article({
     required this.id,
     required this.skuCode,
@@ -29,6 +33,11 @@ class Article {
     required this.categoria,
     required this.unidadMedida,
     required this.fechaRegistro,
+    required this.caracteristicas, // Usar una lista de características
+    required this.almacen, // Almacén
+    required this.cuponDescuento, // Cupón de descuento
+    required this.inPromocion, // Indicador de promoción
+    required this.puntuacion, // Puntuación del artículo
   });
 
   // Método para convertir un mapa de datos a una instancia de Article
@@ -52,6 +61,37 @@ class Article {
       categoria: map['categoria'] ?? '',
       unidadMedida: map['unidadMedida'] ?? '',
       fechaRegistro: map['fechaRegistro'] ?? '',
+      // Convertir las características a una lista de Strings
+      caracteristicas: List<String>.from(map['caracteristicas'] ?? []),
+      almacen: map['almacen'] ?? '', // Almacén
+      cuponDescuento: map['cuponDescuento'] ?? 0.0, // Cupón de descuento
+      inPromocion: map['inPromocion'] ?? false, // Si está en promoción
+      puntuacion: map['puntuacion'] ?? 0.0, // Puntuación del artículo
     );
+  }
+
+  // Método para convertir una instancia de Article a un mapa de datos
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'sku_code': skuCode,
+      'status': estatus,
+      'id_usuario': idUsuario,
+      'precio': precio,
+      'cantidad': cantidad,
+      'stock': disponible ? 1 : 0,
+      'nombre': title,
+      'url': image,
+      'descripcion': descripcion,
+      'proveedor': proveedor,
+      'categoria': categoria,
+      'unidadMedida': unidadMedida,
+      'fechaRegistro': fechaRegistro,
+      'caracteristicas': caracteristicas, // Guardar como lista
+      'almacen': almacen, // Almacén
+      'cuponDescuento': cuponDescuento, // Cupón de descuento
+      'inPromocion': inPromocion, // Indicador de promoción
+      'puntuacion': puntuacion, // Puntuación del artículo
+    };
   }
 }
